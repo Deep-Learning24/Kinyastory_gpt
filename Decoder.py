@@ -128,12 +128,33 @@ class Projection(nn.Module):
         return self.linear(x)
     
 class DecoderLayer(nn.Module):
-    pass
+    def _init_(self,d_model,num_heads,dropout=0.1):
+        super(DecoderLayer,self)._init_()
+        self.multi_head_attention = MultiHeadAttention(d_model,num_heads,dropout)
+        self.layer_norm_1 = LayerNorm(d_model)
+        self.feed_forward = FeedForward(d_model,dropout=dropout)
+        self.layer_norm_2 = LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+    def forward(self,x,mask):
+        #x: (batch_size,seq_len,d_model)
+        #mask: (batch_size,seq_len,seq_len)
+        #x: (batch_size,seq_len,d_model)
+        x = self.layer_norm_1(x + self.dropout(self.multi_head_attention(x,x,x,mask)))
+        #x: (batch_size,seq_len,d_model)
+        x = self.layer_norm_2(x + self.dropout(self.feed_forward(x)))
+        return x
 
 class Decoder(nn.Module):
-    pass
-   
+    def __init__(self, layers):
+        super().__init__()
+        self.layers= layers
+        self.norm= LayerNorm()
+
+    def forward(self, inp, enc_output, src_mask, tgt_mask):
+        for layer in self.layers:
+            inp= layer(inp, enc_output, src_mask, tgt_mask)
+        return self.norm(inp)
     
-   
+
         
         
