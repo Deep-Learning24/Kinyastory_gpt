@@ -6,10 +6,11 @@ from torch.cuda.amp import autocast
 import torch
 import wandb
 import torch.nn as nn
-from KinyaStory.tokenizer_utils import handel_encode, handel_decode
+from tokenizer_utils import Tokenizer
 from nltk.translate.bleu_score import sentence_bleu
 from rouge import Rouge
 import os
+from transformers  import AutoTokenizer
 
 from nltk.translate.bleu_score import SmoothingFunction
 
@@ -34,7 +35,9 @@ class Trainer:
 
     def train(self, train_loader,val_loader, epochs):
         self.model.train()
-        running_loss = 0.0
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
+        tokenizer_instance = Tokenizer(tokenizer)
         for epoch in range(epochs):
             total_loss = 0
             progress_bar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{epochs}')
@@ -60,7 +63,7 @@ class Trainer:
             print(results)
             wandb.log(results)
     
-    def evaluate(self, loader):
+    def evaluate(self, loader,tokenizer_instance):
         self.model.eval()
         total_loss = 0
         bleu_scores = []
@@ -79,8 +82,8 @@ class Trainer:
 
                 #labels = labels[labels != -100]
                 predicted_ids = torch.argmax(logits, dim=-1)
-                bleu_score = self.calculate_bleu_score(labels, predicted_ids)
-                rouge_score = self.calculate_rouge_score(labels, predicted_ids)
+                bleu_score = self.calculate_bleu_score(labels, predicted_ids,tokenizer_instance)
+                rouge_score = self.calculate_rouge_score(labels, predicted_ids,tokenizer_instance)
                 perplexity = torch.exp(loss)
                 perplexities.append(perplexity.item())
                 bleu_scores.append(bleu_score)
@@ -92,7 +95,7 @@ class Trainer:
         return avg_loss, avg_bleu, avg_rouge, mean(perplexities)
 
     
-    def calculate_bleu_score(self, labels, predicted_ids):
+    def calculate_bleu_score(self, labels, predicted_ids,tokenizer_instance):
         bleu_scores = []
         for i in range(len(labels)):
             # Exclude -100 values from labels before decoding
@@ -103,13 +106,13 @@ class Trainer:
                 if token>0:
                     proper_label.append(token)
                         
-            decoded_label = handel_decode(proper_label)
-            predicted = handel_decode(predicted_ids[i])
+            decoded_label = tokenizer_instance.handel_decode(proper_label)
+            predicted = tokenizer_instance.handel_decode(predicted_ids[i])
             bleu_score = sentence_bleu(decoded_label, predicted, smoothing_function=self.smoothie)
             bleu_scores.append(bleu_score)
         return mean(bleu_scores)
     
-    def calculate_rouge_score(self, labels, predicted_ids):
+    def calculate_rouge_score(self, labels, predicted_ids,tokenizer_instance):
         rouge_scores = []
     
         for label, predicted_id in zip(labels, predicted_ids):
@@ -117,8 +120,8 @@ class Trainer:
             proper_label = [token for token in label if token > 0]
             
             # Decode both label and prediction
-            decoded_label = handel_decode(proper_label)
-            predicted = handel_decode(predicted_id)
+            decoded_label = tokenizer_instance.handel_decode(proper_label)
+            predicted = tokenizer_instance.handel_decode(predicted_id)
             
             # Check for empty strings to avoid 'Hypothesis is empty' error
             if not decoded_label.strip() or not predicted.strip():

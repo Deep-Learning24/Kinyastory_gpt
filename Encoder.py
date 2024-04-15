@@ -28,7 +28,7 @@ def decode(tokenizer, token_ids, skip_special_tokens=False):
 
 class KinyaTokenizer(object):
     def __init__(self, dataset_path):
-        self.tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=512)
+        self.tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
         self.dataset_path = dataset_path
         #self.extend_vocab()
 

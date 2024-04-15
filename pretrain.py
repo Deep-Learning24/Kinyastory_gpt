@@ -8,7 +8,7 @@ sys.path.append('../')
 
 from Trainer import Trainer
 from Decoder import Transformer
-from KinyaStory.tokenizer_utils import handel_encode, handel_decode
+from tokenizer_utils import Tokenizer
 import os
 from transformers  import AutoTokenizer
 from torch.utils.data import DataLoader, Dataset
@@ -102,8 +102,9 @@ class DataPreparator:
 
     def _tokenize_and_append(self, text, hf):
         try:
+            tokenizer = Tokenizer(tokenizer=self.tokenizer)
             text = self.preprocess_text(text)
-            input_ids, attention_mask = handel_encode(text)
+            input_ids, attention_mask = tokenizer.handel_encode(text)
             # Check if datasets exist; if not, create them
             if "input_ids" not in hf:
                 hf.create_dataset("input_ids", (0, self.max_length), maxshape=(None, self.max_length), dtype='i8', compression="gzip")
