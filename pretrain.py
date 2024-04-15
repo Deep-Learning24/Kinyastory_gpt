@@ -17,7 +17,7 @@ from torch.nn.utils.rnn import pad_sequence
 from tqdm import tqdm
 
 class DataPreparator:
-    def __init__(self, tokenizer, max_length=128):
+    def __init__(self, tokenizer, max_length=2048):
 
         self.tokenizer = tokenizer
         self.max_length = max_length
