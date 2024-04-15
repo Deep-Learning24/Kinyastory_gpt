@@ -8,6 +8,18 @@ class Embedding(nn.Module):
     def __init__(self,vocab_size,embedding_size):
         super(Embedding,self).__init__()
         self.embedding = nn.Embedding(vocab_size,embedding_size)
+    def forward(self,x):
+        return self.embedding(x)
+
+class ShiftedEmbedding(nn.Module):
+    def __init__(self, vocab_size, embedding_size):
+        super(ShiftedEmbedding, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, embedding_size)
+
+    def forward(self, x):
+        x = self.embedding(x)
+        return torch.cat([x[:, 1:], torch.zeros_like(x[:, :1])], dim=1)
+    
 
 class PositionalEncoding(torch.nn.Module):
     ''' Position Encoding from Attention Is All You Need Paper '''
@@ -124,8 +136,9 @@ class Projection(nn.Module):
     def __init_(self,d_model,vocab_size):
         super(Projection,self).__init__()
         self.linear = nn.Linear(d_model,vocab_size)
+        self.softmax = nn.Softmax(dim=-1)
     def forward(self,x):
-        return self.linear(x)
+        return self.softmax(self.linear(x))
     
 class DecoderLayer(nn.Module):
     def _init_(self,d_model,num_heads,dropout=0.1):
@@ -135,12 +148,11 @@ class DecoderLayer(nn.Module):
         self.feed_forward = FeedForward(d_model,dropout=dropout)
         self.layer_norm_2 = LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    def forward(self,x,mask):
+    def forward(self, x, mask):
         #x: (batch_size,seq_len,d_model)
         #mask: (batch_size,seq_len,seq_len)
-        #x: (batch_size,seq_len,d_model)
-        x = self.layer_norm_1(x + self.dropout(self.multi_head_attention(x,x,x,mask)))
-        #x: (batch_size,seq_len,d_model)
+        x = self.layer_norm_1(x + self.dropout(self.multi_head_attention(x, x, x, mask)))
+    
         x = self.layer_norm_2(x + self.dropout(self.feed_forward(x)))
         return x
 
@@ -158,8 +170,9 @@ class Decoder(nn.Module):
 class Transformer(nn.Module):
     def __init__(self, vocab_size, d_model, num_heads, num_layers, dropout=0.1):
         super(Transformer, self).__init__()
-        self.embedding = Embedding(vocab_size, d_model)
+        self.embedding = ShiftedEmbedding(vocab_size, d_model)
         self.positional_encoding = PositionalEncoding(d_model)
+        
         self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, dropout) for _ in range(num_layers)])
         self.projection = Projection(d_model, vocab_size)
         self.decoder = Decoder(self.decoder_layers)
@@ -170,7 +183,5 @@ class Transformer(nn.Module):
         self.decoder(x, mask)
         x = self.projection(x)
         return x
-        
-
         
         

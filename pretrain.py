@@ -1,5 +1,7 @@
 
 import sys
+
+import torch
 sys.path.append('../')
 
 from KinyaStory.pretrain import PretrainDataset,DataPreparator,collate_fn
@@ -7,12 +9,13 @@ from Trainer import Trainer
 from Decoder import Decoder
 from KinyaStory.tokenizer_utils import handel_encode, handel_decode
 import os
+from transformers  import AutoTokenizer
 from torch.utils.data import DataLoader, Dataset
 
 def main():
-    
-    tokenizer = handel_encode
-    max_length = 128  # or another value based on your model's capabilities
+    # Initialize the tokenizer
+    tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
+    max_length = 2048 
     
     # Paths to your raw data
     text_files_path = '../Kinyarwanda_Data/Kinyarwanda_Data'
@@ -23,8 +26,8 @@ def main():
     output_dir = '../pretrain_tokenized_data'
     
     # Initialize and run your data preparation
-    # data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
-    # data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
+    data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
+    data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
     
     # Assuming the above method saves three HDF5 files: train_dataset.hdf5, val_dataset.hdf5, test_dataset.hdf5
     
@@ -39,19 +42,25 @@ def main():
     model_path = 'models'
     
     # Initialize the training process
-    #def __init__(self, model, optimizer, criterion)
-    model = Decoder()
-    # train_instance = Train(
-    #     model_path=model_path,
-    #     tokenizer=tokenizer,  # Note: If your tokenizer needs to be used within Pretrain, ensure it's correctly passed and utilized
-    #     device='cuda'  # or 'cpu'
-    # )
-    
+
+    #vocab_size, d_model, num_heads, num_layers, dropout=0.1
+    model_config = {
+        'vocab_size': len(tokenizer.get_vocab()), 
+        'd_model': 12288,
+        'num_heads': 8,
+        'num_layers': 6,
+        'dropout': 0.1
+    }
+    model = Decoder(**model_config)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    criterion = torch.nn.CrossEntropyLoss(ignore_index=-100)
+    train_instance = Trainer(model, optimizer, criterion, model_path)
+
     # Start training
-    # train_instance.train(train_loader, val_loader, epochs=50)
+    train_instance.train(train_loader, val_loader, epochs=50)
     
     # # Save the final model
-    # train_instance.save_model()
+    train_instance.save_model()
 
 if __name__ == "__main__":
     main()

@@ -14,10 +14,11 @@ import os
 from nltk.translate.bleu_score import SmoothingFunction
 
 class Trainer:
-    def __init__(self, model, optimizer, criterion):
+    def __init__(self, model, optimizer, criterion,model_path):
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
+        self.model_path = model_path
         wandb.login(key="")#API Key is in your wandb account, under settings (wandb.ai/settings)
         
         wandb.init(
