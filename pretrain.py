@@ -195,12 +195,12 @@ def main():
     max_length = 2048 
     
     # Paths to your raw data
-    text_files_path = '../Kinyarwanda_Data/Kinyarwanda_Data'
-    train_csv_path = '../kinyarwanda news/train.csv'
-    test_csv_path = '../kinyarwanda news/test.csv'
+    text_files_path = '../KinyaStory/Kinyarwanda_Data/Kinyarwanda_Data'
+    train_csv_path = '../KinyaStory/kinyarwanda news/train.csv'
+    test_csv_path = '../KinyaStory/kinyarwanda news/test.csv'
     
     # Output directory for processed data
-    output_dir = '../pretrain_tokenized_data'
+    output_dir = '../KinyaStory/pretrain_tokenized_data'
     
     # Initialize and run your data preparation
     data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
