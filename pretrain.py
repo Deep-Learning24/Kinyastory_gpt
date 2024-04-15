@@ -7,7 +7,7 @@ import torch
 sys.path.append('../')
 
 from Trainer import Trainer
-from Decoder import Decoder
+from Decoder import Transformer
 from KinyaStory.tokenizer_utils import handel_encode, handel_decode
 import os
 from transformers  import AutoTokenizer
@@ -227,7 +227,7 @@ def main():
         'num_layers': 6,
         'dropout': 0.1
     }
-    model = Decoder(**model_config)
+    model = Transformer(**model_config)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-100)
     train_instance = Trainer(model, optimizer, criterion, model_path)
