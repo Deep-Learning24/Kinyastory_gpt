@@ -1,10 +1,12 @@
 from statistics import mean
 from tqdm import tqdm
+import sys
+sys.path.append('../')
 from torch.cuda.amp import autocast
 import torch
 import wandb
 import torch.nn as nn
-from tokenizer_utils import handel_encode, handel_decode
+from KinyaStory.tokenizer_utils import handel_encode, handel_decode
 from nltk.translate.bleu_score import sentence_bleu
 from rouge import Rouge
 import os
