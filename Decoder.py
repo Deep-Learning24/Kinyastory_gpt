@@ -154,7 +154,23 @@ class Decoder(nn.Module):
         for layer in self.layers:
             inp= layer(inp, enc_output, src_mask, tgt_mask)
         return self.norm(inp)
-    
+
+class Transformer(nn.Module):
+    def __init__(self, vocab_size, d_model, num_heads, num_layers, dropout=0.1):
+        super(Transformer, self).__init__()
+        self.embedding = Embedding(vocab_size, d_model)
+        self.positional_encoding = PositionalEncoding(d_model)
+        self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, dropout) for _ in range(num_layers)])
+        self.projection = Projection(d_model, vocab_size)
+        self.decoder = Decoder(self.decoder_layers)
+        
+    def forward(self, x, mask):
+        x = self.embedding(x)
+        x = self.positional_encoding(x)
+        self.decoder(x, mask)
+        x = self.projection(x)
+        return x
+        
 
         
         
