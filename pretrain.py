@@ -237,7 +237,7 @@ def main():
     model = Transformer(**model_config)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-100)
-    train_instance = Trainer(model, optimizer, criterion, model_path)
+    train_instance = Trainer(model, optimizer, criterion, model_path,model_config)
 
     # Start training
     train_instance.train(train_loader, val_loader, epochs=50)
