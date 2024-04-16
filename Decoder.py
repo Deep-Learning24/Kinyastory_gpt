@@ -142,7 +142,7 @@ class Projection(nn.Module):
     
 class DecoderLayer(nn.Module):
     def __init__(self,d_model,num_heads,dropout=0.1):
-        super(DecoderLayer,self)._init_()
+        super(DecoderLayer,self).__init__()
         self.multi_head_attention = MultiHeadAttention(d_model,num_heads,dropout)
         self.layer_norm_1 = LayerNorm(d_model)
         self.feed_forward = FeedForward(d_model,dropout=dropout)
