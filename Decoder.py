@@ -24,7 +24,7 @@ class ShiftedEmbedding(nn.Module):
 class PositionalEncoding(torch.nn.Module):
     ''' Position Encoding from Attention Is All You Need Paper '''
 
-    def __init__(self, d_model, max_len=1024):
+    def __init__(self, d_model, max_len=512):
         super().__init__()
 
         # Initialize a tensor to hold the positional encodings
@@ -52,9 +52,9 @@ class PositionalEncoding(torch.nn.Module):
 class FeedForward(torch.nn.Module):
     ''' Projection Layer (Fully Connected Layers) '''
 
-    def __init__(self, d_model, d_ff=1024, dropout=0.1):
+    def __init__(self, d_model, d_ff=512, dropout=0.1):
         super().__init__()
-        #1024 x 12288
+        #512 x 12288
 
         self.linear_1   = torch.nn.Linear(d_model, d_ff)
         self.dropout    = torch.nn.Dropout(dropout)
@@ -99,6 +99,11 @@ class MultiHeadAttention(nn.Module):
         w = nn.Softmax(dim=-1)(w)
         return torch.matmul(w, v)
     
+    def merge_heads(self, x):
+        x = x.permute(0, 2, 1, 3).contiguous()
+        new_x_shape = x.size()[:-2] + (x.size(-2) * x.size(-1),)
+        return x.view(*new_x_shape)  # in Tensorflow implem: fct merge_states
+    
     def forward(self,Q,K,V,mask=None):
         Q = self.W_Q(Q).view(-1,Q.size(1),self.num_heads,self.d_k).transpose(1,2)
         K = self.W_K(K).view(-1,K.size(1),self.num_heads,self.d_k).transpose(1,2)
@@ -109,13 +114,7 @@ class MultiHeadAttention(nn.Module):
         scores = self.attention(Q,K,V,mask)
         print("scores shape:", scores.shape)
 
-        V = V.transpose(-2, -1)
-        context = torch.matmul(scores, V)
-        print("Original shape:", context.size())
-        original_total = context.numel()
-        print("Original total:", original_total)
-        context = context.view(-1, context.size(2) * self.num_heads, self.d_k)
-        context = context.transpose(1, 2).contiguous().view(-1, self.d_model, context.size(1))
+        context = self.merge_heads(scores)
         context = self.W_O(context)
         return context
 

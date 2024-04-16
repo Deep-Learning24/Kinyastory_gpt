@@ -22,7 +22,7 @@ import nltk
 
 
 class DataPreparator:
-    def __init__(self, tokenizer, max_length=1024):
+    def __init__(self, tokenizer, max_length=512):
 
         self.tokenizer = tokenizer
         self.max_length = max_length
@@ -199,8 +199,8 @@ def collate_fn(batch):
 
 def main():
     # Initialize the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=1024)
-    max_length = 1024 
+    tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=512)
+    max_length = 512 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Paths to your raw data
@@ -212,8 +212,8 @@ def main():
     output_dir = './pretrain_tokenized_data'
     
     # Initialize and run your data preparation
-    # data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
-    # data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
+    data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
+    data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
     
     # Assuming the above method saves three HDF5 files: train_dataset.hdf5, val_dataset.hdf5, test_dataset.hdf5
     
@@ -232,7 +232,7 @@ def main():
     #vocab_size, d_model, num_heads, num_layers, dropout=0.1
     model_config = {
         'vocab_size': len(tokenizer.get_vocab()), 
-        'd_model': 12288//2,
+        'd_model': 12288//8,
         'num_heads': 8,
         'num_layers': 6,
         'dropout': 0.1
