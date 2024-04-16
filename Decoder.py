@@ -106,9 +106,11 @@ class MultiHeadAttention(nn.Module):
         print("Q shape:", Q.shape)
         print("K shape:", K.shape)
         print("V shape:", V.shape)
-        scores = self.attention(Q,K,V,mask)[0]
+        scores = self.attention(Q,K,V,mask)
         print("scores shape:", scores.shape)
-        context = torch.matmul(scores,V)
+
+        V = V.transpose(-2, -1)
+        context = torch.matmul(scores, V)
         context = context.transpose(1,2).contiguous().view(-1,context.size(2),self.d_model)
         context = self.W_O(context)
         return context
