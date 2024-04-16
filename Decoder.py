@@ -133,11 +133,12 @@ class LayerNorm(nn.Module):
         return self.weight * x + self.bias
 
 class Projection(nn.Module):
-    def __init_(self,d_model,vocab_size):
-        super(Projection,self).__init__()
-        self.linear = nn.Linear(d_model,vocab_size)
+    def __init__(self, d_model, vocab_size):
+        super(Projection, self).__init__()
+        self.linear = nn.Linear(d_model, vocab_size)
         self.softmax = nn.Softmax(dim=-1)
-    def forward(self,x):
+
+    def forward(self, x):
         return self.softmax(self.linear(x))
     
 class DecoderLayer(nn.Module):
