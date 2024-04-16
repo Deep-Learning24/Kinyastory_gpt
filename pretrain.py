@@ -16,9 +16,9 @@ import h5py
 from torch.nn.utils.rnn import pad_sequence
 from tqdm import tqdm
 import nltk
-from nltk.corpus import words
+# from nltk.corpus import words
 
-nltk.download('words')
+#nltk.download('words')
 
 
 class DataPreparator:
@@ -27,7 +27,7 @@ class DataPreparator:
         self.tokenizer = tokenizer
         self.max_length = max_length
         #self.common_english_words = set(["the", "and", "is", "in", "at", "of", "on", "for", "with", "without"])
-        self.common_english_words = set(words.words())
+        #self.common_english_words = set(words.words())
 
     def prepare_datasets(self, text_files_path, train_csv_path, test_csv_path, output_dir):
         """
