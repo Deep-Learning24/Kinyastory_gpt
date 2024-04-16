@@ -41,26 +41,34 @@ class Trainer:
         tokenizer_instance = Tokenizer(tokenizer)
         for epoch in range(epochs):
             total_loss = 0
+            total_correct = 0
             progress_bar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{epochs}')
             for batch in progress_bar:
                 batch = {k: v.to(self.device) for k, v in batch.items()}
-
+    
                 with autocast():
-                    loss = self.model(**batch)
-                    
+                    logits,loss = self.model(**batch)
+    
                 total_loss += loss.item()
-                
+    
+                # Calculate the number of correct predictions
+                pred = torch.argmax(logits, dim=-1)
+                correct = (pred == batch['labels']).sum().item()
+                total_correct += correct
+    
                 self.optimizer.zero_grad()
+    
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1)
-
+    
                 self.optimizer.step()
-                
-                progress_bar.set_postfix({'Training Loss': f'{loss.item():.4f}'})
-                
+    
+                progress_bar.set_postfix({'Training Loss': f'{loss.item():.4f}', 'Training Accuracy': f'{correct / len(batch["labels"]):.4f}'})
+    
             avg_train_loss = total_loss / len(train_loader)
-            eval_loss, avg_bleu, avg_rouge, avg_perplexity = self.evaluate(val_loader)
-            results={"avg_train_loss": avg_train_loss, "eval_loss": eval_loss, "avg_bleu": avg_bleu, "avg_rouge": avg_rouge, "avg_perplexity": avg_perplexity,"epoch": epoch+1}
+            avg_train_accuracy = total_correct / len(train_loader.dataset)
+            eval_loss, avg_bleu, avg_rouge, avg_perplexity = self.evaluate(val_loader,tokenizer_instance)
+            results={"avg_train_loss": avg_train_loss, "avg_train_accuracy": avg_train_accuracy, "eval_loss": eval_loss, "avg_bleu": avg_bleu, "avg_rouge": avg_rouge, "avg_perplexity": avg_perplexity,"epoch": epoch+1}
             print(results)
             wandb.log(results)
     
@@ -78,7 +86,7 @@ class Trainer:
                 # get the labels which are not equal to -100
                
                 with autocast():
-                    logits, _ = self.model(input_ids, attention_mask=attention_mask)
+                    logits= self.model(input_ids, attention_mask)
                     loss = self.loss_fn(logits.view(-1, logits.size(-1)), labels.view(-1))
 
                 #labels = labels[labels != -100]

@@ -168,6 +168,8 @@ class Decoder(nn.Module):
             inp= layer(inp, enc_output, src_mask, tgt_mask)
         return self.norm(inp)
 
+
+
 class Transformer(nn.Module):
     def __init__(self, vocab_size, d_model, num_heads, num_layers, dropout=0.1):
         super(Transformer, self).__init__()
@@ -178,11 +180,16 @@ class Transformer(nn.Module):
         self.projection = Projection(d_model, vocab_size)
         self.decoder = Decoder(self.decoder_layers, d_model)
         
-    def forward(self, x, mask):
+    def forward(self, x, mask, labels=None):
         x = self.embedding(x)
         x = self.positional_encoding(x)
-        self.decoder(x, mask)
-        x = self.projection(x)
-        return x
+        x = self.decoder(x, mask)
+        logits = self.projection(x)
+        
+        if labels is not None:
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), labels.view(-1),ignore_index=-100)
+            return logits, loss
+        
+        return logits
         
         
