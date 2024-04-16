@@ -158,10 +158,10 @@ class DecoderLayer(nn.Module):
         return x
 
 class Decoder(nn.Module):
-    def __init__(self, layers):
+    def __init__(self, layers, d_model):
         super().__init__()
         self.layers= layers
-        self.norm= LayerNorm()
+        self.norm= LayerNorm(d_model)
 
     def forward(self, inp, enc_output, src_mask, tgt_mask):
         for layer in self.layers:
@@ -176,7 +176,7 @@ class Transformer(nn.Module):
         
         self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, dropout) for _ in range(num_layers)])
         self.projection = Projection(d_model, vocab_size)
-        self.decoder = Decoder(self.decoder_layers)
+        self.decoder = Decoder(self.decoder_layers, d_model)
         
     def forward(self, x, mask):
         x = self.embedding(x)
