@@ -111,7 +111,11 @@ class MultiHeadAttention(nn.Module):
 
         V = V.transpose(-2, -1)
         context = torch.matmul(scores, V)
-        context = context.transpose(1,2).contiguous().view(-1,context.size(2),self.d_model)
+        print("Original shape:", context.size())
+        original_total = context.numel()
+        print("Original total:", original_total)
+        context = context.view(-1, context.size(2) * self.num_heads, self.d_k)
+        context = context.transpose(1, 2).contiguous().view(-1, self.d_model, context.size(1))
         context = self.W_O(context)
         return context
 
