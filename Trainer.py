@@ -31,7 +31,7 @@ class Trainer:
             id ="kinya-gpt-pretrain", ### Insert specific run id here if you want to resume a previous run
             #resume = "must", ### You need this to resume previous runs, but comment out reinit = True when using this
             )
-        
+        self.loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
         self.load_model()
 
     def train(self, train_loader,val_loader, epochs):
