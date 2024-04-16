@@ -84,36 +84,28 @@ class MultiHeadAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.dropout = nn.Dropout(dropout)
 
-    def attention(self,Q,K,V,mask=None,dropout=None):
-        #Q,K,V: (batch_size,seq_len,d_model)
-        #mask: (batch_size,seq_len,seq_len)
-        #Q,K,V: (batch_size,num_heads,seq_len,d_k)
-        d_k = Q.size(-1)
-        attention_scores = torch.matmul(Q,K.transpose(-2,-1))/math.sqrt(d_k)
-        if mask is not None:
-            attention_scores = attention_scores.masked_fill(mask==0,-1e9)
-        attention_scores = self.softmax(attention_scores)
-        if dropout is not None:
-            attention_scores = dropout(attention_scores)
-        #attention_scores: (batch_size,num_heads,seq_len,seq_len)
-        #V: (batch_size,num_heads,seq_len,d_k)
-        return (torch.matmul(attention_scores,V),attention_scores)
+    def attention(self, q, k, v, attention_mask=None):
+        w = torch.matmul(q, k.transpose(-2, -1))
+    
+        if attention_mask is not None:
+            seq_length = w.size(-1)
+    
+            # Ensure attention_mask is reshaped correctly
+            attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)  # Now should be [batch_size, 1, 1, seq_length]
+            attention_mask = attention_mask.expand(-1, -1, seq_length, seq_length)
+    
+            w = w.masked_fill(attention_mask == 0, float('-inf'))
+    
+        w = nn.Softmax(dim=-1)(w)
+        return torch.matmul(w, v)
     
     def forward(self,Q,K,V,mask=None):
-        #Q,K,V: (batch_size,seq_len,d_model)
-        #mask: (batch_size,seq_len,seq_len)
-        #Q,K,V: (batch_size,num_heads,seq_len,d_k)
-        Q = self.W_Q(Q).view(-1,Q.size(1),self.num_heads,self.d_k).transpose(1,2) # (batch_size,seq_len,d_model) -> (batch_size,seq_len,num_heads,d_k)
+        Q = self.W_Q(Q).view(-1,Q.size(1),self.num_heads,self.d_k).transpose(1,2)
         K = self.W_K(K).view(-1,K.size(1),self.num_heads,self.d_k).transpose(1,2)
         V = self.W_V(V).view(-1,V.size(1),self.num_heads,self.d_k).transpose(1,2)
-        #Q,K: (batch_size,num_heads,seq_len,d_k)
-        #scores: (batch_size,num_heads,seq_len,seq_len)
-        scores = self.attention(Q,K,V,mask,self.dropout)[0]
-        #context: (batch_size,num_heads,seq_len,d_k)
+        scores = self.attention(Q,K,V,mask)[0]
         context = torch.matmul(scores,V)
-        #context: (batch_size,seq_len,num_heads,d_k)
         context = context.transpose(1,2).contiguous().view(-1,context.size(2),self.d_model)
-        #context: (batch_size,seq_len,d_model)
         context = self.W_O(context)
         return context
 
