@@ -32,6 +32,7 @@ class Trainer:
             #resume = "must", ### You need this to resume previous runs, but comment out reinit = True when using this
             )
         self.loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
+        self.smoothie = SmoothingFunction().method4
         self.load_model()
 
     def train(self, train_loader,val_loader, epochs):
