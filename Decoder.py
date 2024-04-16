@@ -149,23 +149,26 @@ class DecoderLayer(nn.Module):
         self.feed_forward = FeedForward(d_model,dropout=dropout)
         self.layer_norm_2 = LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    def forward(self, x, mask):
+    def forward(self, x,enc_output=None,src_mask=None):
         #x: (batch_size,seq_len,d_model)
         #mask: (batch_size,seq_len,seq_len)
-        x = self.layer_norm_1(x + self.dropout(self.multi_head_attention(x, x, x, mask)))
-    
+        x = self.layer_norm_1(x + self.dropout(self.multi_head_attention(x, x, x, src_mask)))
+
+        if enc_output is not None:
+            x = self.layer_norm_2(x + self.dropout(self.multi_head_attention(x, enc_output, enc_output, src_mask)))
+        
         x = self.layer_norm_2(x + self.dropout(self.feed_forward(x)))
         return x
-
+    
 class Decoder(nn.Module):
     def __init__(self, layers, d_model):
         super().__init__()
-        self.layers= layers
-        self.norm= LayerNorm(d_model)
+        self.layers = layers
+        self.norm = LayerNorm(d_model)
 
-    def forward(self, inp, enc_output, src_mask, tgt_mask):
+    def forward(self, inp, enc_output=None, src_mask=None):
         for layer in self.layers:
-            inp= layer(inp, enc_output, src_mask, tgt_mask)
+            inp = layer(inp, enc_output, src_mask)
         return self.norm(inp)
 
 
@@ -183,7 +186,7 @@ class Transformer(nn.Module):
     def forward(self, input_ids, attention_mask, labels=None):
         x = self.embedding(input_ids)
         x = self.positional_encoding(x)
-        x = self.decoder(x, attention_mask)
+        x = self.decoder(x, None, attention_mask)  # Pass attention_mask as src_mask
         logits = self.projection(x)
         
         if labels is not None:

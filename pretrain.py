@@ -230,7 +230,7 @@ def main():
     #vocab_size, d_model, num_heads, num_layers, dropout=0.1
     model_config = {
         'vocab_size': len(tokenizer.get_vocab()), 
-        'd_model': 12288,
+        'd_model': 12288//2,
         'num_heads': 8,
         'num_layers': 6,
         'dropout': 0.1
