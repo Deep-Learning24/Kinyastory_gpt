@@ -209,8 +209,8 @@ def main():
     output_dir = './pretrain_tokenized_data'
     
     # Initialize and run your data preparation
-    data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
-    data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
+    # data_preparator = DataPreparator(tokenizer=tokenizer, max_length=max_length)
+    # data_preparator.prepare_datasets(text_files_path, train_csv_path, test_csv_path, output_dir)
     
     # Assuming the above method saves three HDF5 files: train_dataset.hdf5, val_dataset.hdf5, test_dataset.hdf5
     
