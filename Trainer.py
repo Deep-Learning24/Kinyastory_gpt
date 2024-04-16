@@ -33,6 +33,7 @@ class Trainer:
             )
         self.loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
         self.smoothie = SmoothingFunction().method4
+        self.rouge = Rouge()
         self.load_model()
 
     def train(self, train_loader,val_loader, epochs):
