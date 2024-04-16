@@ -199,7 +199,8 @@ def main():
     # Initialize the tokenizer
     tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
     max_length = 2048 
-    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # Paths to your raw data
     text_files_path = '../KinyaStory/Kinyarwanda_Data/Kinyarwanda_Data'
     train_csv_path = '../KinyaStory/kinyarwanda news/train.csv'
@@ -234,7 +235,7 @@ def main():
         'num_layers': 6,
         'dropout': 0.1
     }
-    model = Transformer(**model_config)
+    model = Transformer(**model_config).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-100)
     train_instance = Trainer(model, optimizer, criterion, model_path,model_config)
