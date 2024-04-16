@@ -251,7 +251,7 @@ def main():
 
     # Start training
     #train_instance.train(train_loader, val_loader, epochs=50)
-    train_instance.train(train_subset_loader, val_subset_loader, epochs=1)
+    train_instance.train(train_loader, val_loader, epochs=50)
     
     # # Save the final model
     train_instance.save_model()
