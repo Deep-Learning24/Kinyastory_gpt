@@ -223,6 +223,13 @@ def main():
     
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, collate_fn=collate_fn)
     val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, collate_fn=collate_fn)
+
+
+    # Creating a subset of the data for testing if train and validation works
+    train_subset = torch.utils.data.Subset(train_dataset, torch.arange(0, 100))
+    val_subset = torch.utils.data.Subset(val_dataset, torch.arange(0, 100))
+    train_subset_loader = DataLoader(train_subset, batch_size=16, shuffle=True, collate_fn=collate_fn)
+    val_subset_loader = DataLoader(val_subset, batch_size=16, shuffle=False, collate_fn=collate_fn)
     
     # Model path where checkpoints will be saved
     model_path = 'models'
@@ -243,7 +250,8 @@ def main():
     train_instance = Trainer(model, optimizer, criterion, model_path,model_config)
 
     # Start training
-    train_instance.train(train_loader, val_loader, epochs=50)
+    #train_instance.train(train_loader, val_loader, epochs=50)
+    train_instance.train(train_subset_loader, val_subset_loader, epochs=1)
     
     # # Save the final model
     train_instance.save_model()
