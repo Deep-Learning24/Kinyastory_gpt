@@ -141,7 +141,7 @@ class Projection(nn.Module):
         return self.softmax(self.linear(x))
     
 class DecoderLayer(nn.Module):
-    def _init_(self,d_model,num_heads,dropout=0.1):
+    def __init__(self,d_model,num_heads,dropout=0.1):
         super(DecoderLayer,self)._init_()
         self.multi_head_attention = MultiHeadAttention(d_model,num_heads,dropout)
         self.layer_norm_1 = LayerNorm(d_model)
@@ -170,7 +170,7 @@ class Decoder(nn.Module):
 class Transformer(nn.Module):
     def __init__(self, vocab_size, d_model, num_heads, num_layers, dropout=0.1):
         super(Transformer, self).__init__()
-        self.embedding = ShiftedEmbedding(vocab_size, d_model)
+        self.embedding = Embedding(vocab_size, d_model)
         self.positional_encoding = PositionalEncoding(d_model)
         
         self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, dropout) for _ in range(num_layers)])

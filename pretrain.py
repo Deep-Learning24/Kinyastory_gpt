@@ -148,8 +148,8 @@ class PretrainDataset(Dataset):
         with h5py.File(self.hdf5_file_path, 'r') as hf:
             input_ids = torch.tensor(hf['input_ids'][idx], dtype=torch.long)
             attention_mask = torch.tensor(hf['attention_mask'][idx], dtype=torch.long)
-            # Assuming you want to ignore padding in the loss calculation
-            labels = torch.where(input_ids == 0, torch.tensor(-100), input_ids)
+            # Shift the input_ids one step to the right to create the labels tensor
+            labels = torch.cat([input_ids[1:], torch.tensor([-100])])
         
         return {
             "input_ids": input_ids,
