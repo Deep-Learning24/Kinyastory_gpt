@@ -37,7 +37,7 @@ class Trainer:
     def train(self, train_loader,val_loader, epochs):
         self.model.train()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
+        tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=1024)
         tokenizer_instance = Tokenizer(tokenizer)
         for epoch in range(epochs):
             total_loss = 0

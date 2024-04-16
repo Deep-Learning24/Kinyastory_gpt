@@ -24,7 +24,7 @@ class ShiftedEmbedding(nn.Module):
 class PositionalEncoding(torch.nn.Module):
     ''' Position Encoding from Attention Is All You Need Paper '''
 
-    def __init__(self, d_model, max_len=2048):
+    def __init__(self, d_model, max_len=1024):
         super().__init__()
 
         # Initialize a tensor to hold the positional encodings
@@ -52,9 +52,9 @@ class PositionalEncoding(torch.nn.Module):
 class FeedForward(torch.nn.Module):
     ''' Projection Layer (Fully Connected Layers) '''
 
-    def __init__(self, d_model, d_ff=2048, dropout=0.1):
+    def __init__(self, d_model, d_ff=1024, dropout=0.1):
         super().__init__()
-        #2048 x 12288
+        #1024 x 12288
 
         self.linear_1   = torch.nn.Linear(d_model, d_ff)
         self.dropout    = torch.nn.Dropout(dropout)

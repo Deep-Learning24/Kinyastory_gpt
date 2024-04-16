@@ -22,7 +22,7 @@ import nltk
 
 
 class DataPreparator:
-    def __init__(self, tokenizer, max_length=2048):
+    def __init__(self, tokenizer, max_length=1024):
 
         self.tokenizer = tokenizer
         self.max_length = max_length
@@ -197,8 +197,8 @@ def collate_fn(batch):
 
 def main():
     # Initialize the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=2048)
-    max_length = 2048 
+    tokenizer = AutoTokenizer.from_pretrained("jean-paul/KinyaBERT-large", max_length=1024)
+    max_length = 1024 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Paths to your raw data
