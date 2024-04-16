@@ -180,10 +180,10 @@ class Transformer(nn.Module):
         self.projection = Projection(d_model, vocab_size)
         self.decoder = Decoder(self.decoder_layers, d_model)
         
-    def forward(self, x, mask, labels=None):
-        x = self.embedding(x)
+    def forward(self, input_ids, attention_mask, labels=None):
+        x = self.embedding(input_ids)
         x = self.positional_encoding(x)
-        x = self.decoder(x, mask)
+        x = self.decoder(x, attention_mask)
         logits = self.projection(x)
         
         if labels is not None:
