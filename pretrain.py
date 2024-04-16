@@ -27,7 +27,7 @@ class DataPreparator:
         self.tokenizer = tokenizer
         self.max_length = max_length
         #self.common_english_words = set(["the", "and", "is", "in", "at", "of", "on", "for", "with", "without"])
-        with open('nltk_data/corpora/words/en', 'r') as f:
+        with open('../nltk_data/corpora/words/en', 'r') as f:
             words = f.read().splitlines()
         self.common_english_words = set(words)
 
