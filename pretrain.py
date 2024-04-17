@@ -143,21 +143,26 @@ class TimeMasking(torch.nn.Module):
     def forward(self, x):
         time_mask = torch.randint(0, self.max_time_mask, (1,)).item()
         if time_mask > 0:
-            x_len = x.size(1)
-            mask_start = torch.randint(0, x_len - time_mask, (1,)).item()
-            x[:, mask_start:mask_start + time_mask, :] = 0
+            x_len = x.size(0)
+            if time_mask >= x_len:
+                time_mask = x_len - 1
+            mask_start = torch.randint(0, max(1, x_len - time_mask), (1,)).item()
+            x[mask_start:mask_start + time_mask] = 0
         return x
 
 class FrequencyMasking(torch.nn.Module):
-    def __init__(self, max_freq_mask=10):
+    def __init__(self, max_mask=10):
         super().__init__()
-        self.max_freq_mask = max_freq_mask
+        self.max_mask = max_mask
 
     def forward(self, x):
-        freq_mask = torch.randint(0, self.max_freq_mask, (1,)).item()
-        if freq_mask > 0:
-            freq_start = torch.randint(0, x.size(2) - freq_mask, (1,)).item()
-            x[:, :, freq_start:freq_start + freq_mask] = 0
+        mask = torch.randint(0, self.max_mask, (1,)).item()
+        if mask > 0:
+            x_len = x.size(0)
+            if mask >= x_len:
+                mask = x_len - 1
+            mask_start = torch.randint(0, max(1, x_len - mask), (1,)).item()
+            x[mask_start:mask_start + mask] = 0
         return x
 
 class PretrainDataset(Dataset):
@@ -189,17 +194,17 @@ class PretrainDataset(Dataset):
 
             attention_mask = torch.tensor(hf['attention_mask'][idx], dtype=torch.long)
         
-        input_ids = input_ids.unsqueeze(-1)  # Add a singleton dimension at the end
-        attention_mask = attention_mask.unsqueeze(-1)  # Add a singleton dimension at the end
+        # input_ids = input_ids.unsqueeze(-1)  # Add a singleton dimension at the end
+        # attention_mask = attention_mask.unsqueeze(-1)  # Add a singleton dimension at the end
     
     
         if self.is_train:
             input_ids, attention_mask = self.augmentations(input_ids), self.augmentations(attention_mask)
             # Shift the input_ids one step to the right to create the labels tensor
         
-        # Remove the singleton dimension after applying the augmentations
-        input_ids = input_ids.squeeze(-1)
-        attention_mask = attention_mask.squeeze(-1)
+        # # Remove the singleton dimension after applying the augmentations
+        # input_ids = input_ids.squeeze(-1)
+        # attention_mask = attention_mask.squeeze(-1)
         labels = torch.cat([input_ids[1:], torch.tensor([-100])])
         
         return {
@@ -261,7 +266,7 @@ def main():
     # Assuming the above method saves three HDF5 files: train_dataset.hdf5, val_dataset.hdf5, test_dataset.hdf5
     
     # Initialize DataLoader for each dataset
-    train_dataset = PretrainDataset(os.path.join(output_dir, "train_dataset.hdf5"))
+    train_dataset = PretrainDataset(os.path.join(output_dir, "train_dataset.hdf5"),is_train=False)
     val_dataset = PretrainDataset(os.path.join(output_dir, "val_dataset.hdf5"),is_train=False)
     
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, collate_fn=collate_fn)
