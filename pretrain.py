@@ -135,10 +135,33 @@ class DataPreparator:
                 for line in file:
                     self._tokenize_and_append(line.strip(), hf)
 
+class TimeMasking(torch.nn.Module):
+    def __init__(self, max_time_mask=50):
+        super().__init__()
+        self.max_time_mask = max_time_mask
 
+    def forward(self, x):
+        time_mask = torch.randint(0, self.max_time_mask, (1,)).item()
+        if time_mask > 0:
+            x_len = x.size(1)
+            mask_start = torch.randint(0, x_len - time_mask, (1,)).item()
+            x[:, mask_start:mask_start + time_mask, :] = 0
+        return x
+
+class FrequencyMasking(torch.nn.Module):
+    def __init__(self, max_freq_mask=10):
+        super().__init__()
+        self.max_freq_mask = max_freq_mask
+
+    def forward(self, x):
+        freq_mask = torch.randint(0, self.max_freq_mask, (1,)).item()
+        if freq_mask > 0:
+            freq_start = torch.randint(0, x.size(2) - freq_mask, (1,)).item()
+            x[:, :, freq_start:freq_start + freq_mask] = 0
+        return x
 
 class PretrainDataset(Dataset):
-    def __init__(self, hdf5_file_path):
+    def __init__(self, hdf5_file_path, max_time_mask=50, max_freq_mask=10,is_train=True):
         """
         Initializes the dataset from an HDF5 file containing tokenized data.
 
@@ -148,14 +171,26 @@ class PretrainDataset(Dataset):
         self.hdf5_file_path = hdf5_file_path
         with h5py.File(self.hdf5_file_path, 'r') as hf:
             self.length = hf['input_ids'].shape[0]
+        
+        self.max_time_mask = max_time_mask
+        self.max_freq_mask = max_freq_mask
+        self.is_train = is_train
 
+        self.augmentations = torch.nn.Sequential(
+            TimeMasking(),  # Time masking augmentation
+            FrequencyMasking(),  # Frequency masking augmentation
+        )
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx):
         with h5py.File(self.hdf5_file_path, 'r') as hf:
             input_ids = torch.tensor(hf['input_ids'][idx], dtype=torch.long)
+
             attention_mask = torch.tensor(hf['attention_mask'][idx], dtype=torch.long)
+
+        if self.is_train:
+            input_ids, attention_mask = self.augmentations(input_ids), self.augmentations(attention_mask)
             # Shift the input_ids one step to the right to create the labels tensor
             labels = torch.cat([input_ids[1:], torch.tensor([-100])])
         
@@ -219,7 +254,7 @@ def main():
     
     # Initialize DataLoader for each dataset
     train_dataset = PretrainDataset(os.path.join(output_dir, "train_dataset.hdf5"))
-    val_dataset = PretrainDataset(os.path.join(output_dir, "val_dataset.hdf5"))
+    val_dataset = PretrainDataset(os.path.join(output_dir, "val_dataset.hdf5"),is_train=False)
     
     train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True, collate_fn=collate_fn)
     val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, collate_fn=collate_fn)
