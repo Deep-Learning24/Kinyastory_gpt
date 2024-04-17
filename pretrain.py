@@ -188,11 +188,19 @@ class PretrainDataset(Dataset):
             input_ids = torch.tensor(hf['input_ids'][idx], dtype=torch.long)
 
             attention_mask = torch.tensor(hf['attention_mask'][idx], dtype=torch.long)
-
+        
+        input_ids = input_ids.unsqueeze(-1)  # Add a singleton dimension at the end
+        attention_mask = attention_mask.unsqueeze(-1)  # Add a singleton dimension at the end
+    
+    
         if self.is_train:
             input_ids, attention_mask = self.augmentations(input_ids), self.augmentations(attention_mask)
             # Shift the input_ids one step to the right to create the labels tensor
-            labels = torch.cat([input_ids[1:], torch.tensor([-100])])
+        
+        # Remove the singleton dimension after applying the augmentations
+        input_ids = input_ids.squeeze(-1)
+        attention_mask = attention_mask.squeeze(-1)
+        labels = torch.cat([input_ids[1:], torch.tensor([-100])])
         
         return {
             "input_ids": input_ids,
