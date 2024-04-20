@@ -226,6 +226,7 @@ class PretrainDataset(Dataset):
         # input_ids = input_ids.squeeze(-1)
         # attention_mask = attention_mask.squeeze(-1)
         input_ids = input_ids[:-1]
+        attention_mask = attention_mask[:-1]
         labels = torch.cat([input_ids[1:], torch.tensor([-100])])
 
         return {
