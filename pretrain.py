@@ -314,6 +314,9 @@ def main():
     model = Transformer(**model_config).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-100)
+    num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"The model has {num_params} parameters.")
+    model_config['num_params'] = num_params
     train_instance = Trainer(model, optimizer, criterion, model_path, model_config)
 
     # Start training

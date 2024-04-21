@@ -27,9 +27,9 @@ class Trainer:
             project="project-ablations", 
             config=self.config,
             name = "kinya-gpt-pretrain", ## Wandb creates random run names if you skip this field
-            reinit = True, ### Allows reinitalizing runs when you re-run this cell
+            #reinit = True, ### Allows reinitalizing runs when you re-run this cell
             id ="kinya-gpt-pretrain", ### Insert specific run id here if you want to resume a previous run
-            #resume = "must", ### You need this to resume previous runs, but comment out reinit = True when using this
+            resume = "must", ### You need this to resume previous runs, but comment out reinit = True when using this
             )
         self.loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
         self.smoothie = SmoothingFunction().method4
