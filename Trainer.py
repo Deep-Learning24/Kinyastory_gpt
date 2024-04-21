@@ -58,6 +58,10 @@ class Trainer:
                 correct = (pred == batch['labels']).sum().item()
                 total_correct += correct
     
+                # Debug print statements
+                print(f"Batch size: {len(batch['labels'])}")
+                print(f"Number of correct predictions in this batch: {correct}")
+    
                 self.optimizer.zero_grad()
     
                 loss.backward()
@@ -111,11 +115,8 @@ class Trainer:
         for i in range(len(labels)):
             # Exclude -100 values from labels before decoding
             label = labels[i]
-            proper_label = []
-                # Decode label tensor
-            for token in label:
-                if token>0:
-                    proper_label.append(token)
+            # Filter out -100 values and ensure token IDs are positive
+            proper_label = [token for token in label if token != -100]
                         
             decoded_label = tokenizer_instance.handel_decode(proper_label)
             predicted = tokenizer_instance.handel_decode(predicted_ids[i])
@@ -128,7 +129,7 @@ class Trainer:
     
         for label, predicted_id in zip(labels, predicted_ids):
             # Filter out -100 values and ensure token IDs are positive
-            proper_label = [token for token in label if token > 0]
+            proper_label = [token for token in label if token != -100]
             
             # Decode both label and prediction
             decoded_label = tokenizer_instance.handel_decode(proper_label)
