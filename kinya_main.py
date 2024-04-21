@@ -100,8 +100,10 @@ def text_generator(state_dict):
 
 
 if __name__ == '__main__':
-    if os.path.exists('best_gpt2_model.pt'):
-        state_dict = torch.load('best_gpt2_model.pt',
+    model_path = 'models'
+    model_file = os.path.join(model_path, 'best_gpt2_model.pt')
+    if os.path.exists(model_file):
+        state_dict = torch.load(model_file,
                                 map_location='cpu' if not torch.cuda.is_available() else None)
         text_generator(state_dict)
     else:
