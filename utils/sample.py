@@ -20,14 +20,21 @@ def top_k_logits(logits, k):
 def sample_sequence(model, length, start_token=None, batch_size=None, context=None, temperature=1, top_k=0,
                     device='cuda', sample=True):
     context_input_ids, context_attention_mask = context
+    if context_input_ids is not None:
+        context_input_ids = torch.tensor(context_input_ids, device=device, dtype=torch.long)
+        context_attention_mask = torch.tensor(context_attention_mask, device=device, dtype=torch.long)
+
+    
     if start_token is None:
         assert context_input_ids is not None, 'Specify exactly one of start_token and context!'
         context_input_ids = torch.tensor(context_input_ids, device=device, dtype=torch.long).unsqueeze(0)
         context_input_ids = context_input_ids.repeat(batch_size, 1)
+        context_attention_mask = context_attention_mask.repeat(batch_size, 1)
     else:
         assert context_input_ids is None, 'Specify exactly one of start_token and context!'
         context_input_ids = torch.full((batch_size, 1), start_token, device=device, dtype=torch.long)
 
+    
     prev = context_input_ids
     output = context_input_ids
     
