@@ -77,7 +77,7 @@ def text_generator(state_dict):
     handel_encode = tokenizer_instance.handel_encode
     handel_decode = tokenizer_instance.handel_decode
 
-    context_tokens = handel_encode(args.text)[0]
+    context_tokens = handel_encode(args.text)
 
     generated = 0
     start_token = tokenizer.encode("<|endoftext|>")[0]
@@ -89,7 +89,7 @@ def text_generator(state_dict):
             batch_size=args.batch_size,
             temperature=args.temperature, top_k=args.top_k, device=device
         )
-        out = out[:, len(context_tokens):].tolist()
+        out = out[:, len(context_tokens[0]):].tolist()
         #print(out)
         for i in range(args.batch_size):
             generated += 1
