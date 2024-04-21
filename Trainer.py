@@ -59,8 +59,8 @@ class Trainer:
                 total_correct += correct
     
                 # Debug print statements
-                print(f"Batch size: {len(batch['labels'])}")
-                print(f"Number of correct predictions in this batch: {correct}")
+                #print(f"Batch size: {len(batch['labels'])}")
+                #print(f"Number of correct predictions in this batch: {correct}")
     
                 self.optimizer.zero_grad()
     
